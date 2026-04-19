@@ -190,3 +190,5 @@ bindsym $mod+Shift+s exec flameshot gui
 bar {
         status_command i3status
 }
+gaps inner 20
+gaps outer 10
