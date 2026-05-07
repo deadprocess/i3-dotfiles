@@ -2,13 +2,24 @@
 
 PACKAGEMANAGER="pacman"
 PARAMETER_PKG="-S --noconfirm"
-CONFIG_DIR="$HOME/.config/"
 XINITRC="$HOME/.xinitrc"
-PACKAGES=('picom' 'kitty' 'i3' 'xterm' 'xorg' 'xorg-xinit' 'firefox' 'rofi' 'fastfetch' 'cava' 'btop' 'fcitx5')
-echo "installing packages now...."
+PACKAGES=(
+    'i3' 'picom' 'kitty' 'rofi'
+    'xorg' 'xorg-xinit' 'xterm'
+    'firefox'
+    'python-pywal' 'flameshot'
+    'dex' 'xss-lock' 'network-manager-applet'
+    'fastfetch' 'cava' 'btop' 'fcitx5'
+)
+
+echo "Installing packages..."
 for e in "${PACKAGES[@]}"; do
-	
-	sudo $PACKAGEMANAGER $PARAMETER_PKG "$e"
+    sudo $PACKAGEMANAGER $PARAMETER_PKG "$e"
 done
+
+echo "Deploying configs..."
+cp -r .config/* "$HOME/.config/"
+
 echo "exec i3" > "$XINITRC"
-startx
+
+echo "Done. Run 'startx' to start i3."
