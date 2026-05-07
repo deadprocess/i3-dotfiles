@@ -20,6 +20,10 @@ done
 echo "Deploying configs..."
 cp -r .config/* "$HOME/.config/"
 
+echo "Building and installing lockscreen..."
+make -C lockscreen
+sudo make -C lockscreen install
+
 echo "exec i3" > "$XINITRC"
 
 echo "Done. Run 'startx' to start i3."

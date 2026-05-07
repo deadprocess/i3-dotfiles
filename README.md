@@ -24,3 +24,4 @@ bash setup.sh
 - rofi — app launcher
 - fastfetch — system info
 - fcitx5 — input method
+- lockscreen — custom C lockscreen (blurred bg, pywal colors, clock)
