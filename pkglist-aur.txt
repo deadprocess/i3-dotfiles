@@ -1,0 +1,7 @@
+1password
+davinci-resolve
+protonplus
+python-pywal16
+vscodium-bin
+yay
+yay-debug

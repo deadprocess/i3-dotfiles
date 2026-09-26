@@ -216,8 +216,7 @@ mode "resize" {
 }
 
 bindsym $mod+r mode "resize"
-
-bindsym $mod+Shift+s exec flameshot gui
+bindsym $mod+Shift+s exec --no-startup-id sh -c 'maim -s -u ~/Bilder/Bildschirmfotos/$(date +%F_%H-%M-%S).png'
 bindsym $mod+l exec /usr/local/bin/lockscreen
 bindsym $mod+z exec wal -i ~/wallpaper/ --iterative
 # Start i3bar to display a workspace bar (plus the system information i3status
