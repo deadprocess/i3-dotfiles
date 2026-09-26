@@ -63,7 +63,6 @@ gvfs-onedrive
 gvfs-smb
 gvfs-wsdd
 htop
-i3lock
 i3status
 i3-wm
 inotify-tools
@@ -93,6 +92,7 @@ perf
 picom
 pipewire-alsa
 python-pipx
+quickshell
 rocm-opencl-runtime
 rofi
 rygel
@@ -106,6 +106,7 @@ steam
 sudo
 sushi
 tecla
+ttf-jetbrains-mono-nerd
 vim
 vulkan-radeon
 wget

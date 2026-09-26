@@ -1,5 +1,6 @@
 1password
 davinci-resolve
+i3lock-color
 protonplus
 python-pywal16
 vscodium-bin
