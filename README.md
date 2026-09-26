@@ -47,4 +47,4 @@ yay -S --needed - < pkglist-aur.txt
 and the *JetBrainsMono Nerd Font*. Without pywal colors it uses built-in fallbacks.
 
 - `$mod+l` — lock manually
-- `xss-lock` — locks automatically before suspend (`lock -n`)
+- `xss-lock` — locks automatically before suspend (plain `i3lock --nofork`, without the styling)
