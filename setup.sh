@@ -3,9 +3,9 @@
 # setup.sh - Vergleicht IST-Zustand (Host) mit SOLL-Zustand (Repo).
 #
 #   ./setup.sh              Nur Bericht. Aendert nichts.
-#   ./setup.sh apply        Repo -> Host: Pakete nach, Dotfiles als Symlink.
+#   ./setup.sh apply        Repo -> Host: Pakete nach, Dotfiles kopieren.
 #   ./setup.sh sync         Host -> Repo: Paketlisten UND geaenderte Dotfiles.
-#   ./setup.sh add <pfad>   Neue Datei ins Repo aufnehmen und verlinken.
+#   ./setup.sh add <pfad>   Neue Datei ins Repo kopieren (Host bleibt unberuehrt).
 #
 #   -y   bei sync nicht nachfragen (fuer Cron/CI)
 #
@@ -97,11 +97,12 @@ check_packages() {
 }
 
 # --- Dotfiles ----------------------------------------------------------
+# Dotfiles liegen auf dem Host als echte Kopien, nie als Symlinks.
 # Vier Zustaende pro Datei:
-#   symlink ins Repo  -> ideal, kein Drift moeglich
-#   fehlt             -> muss verlinkt werden
-#   Kopie, identisch  -> Kopie, aber inhaltsgleich
-#   Kopie, abweichend -> der eigentliche Drift-Fall
+#   identisch         -> ideal
+#   fehlt             -> muss kopiert werden (apply)
+#   abweichend        -> der eigentliche Drift-Fall
+#   symlink ins Repo  -> Altlast, apply macht eine Kopie daraus
 check_dotfiles() {
     section "Dotfiles"
 
@@ -116,13 +117,13 @@ check_dotfiles() {
         target="$HOME/$rel"
 
         if [[ -L "$target" ]] && [[ "$(readlink -f "$target")" == "$(readlink -f "$src")" ]]; then
-            ok "$rel ${D}(symlink)${N}"
+            mark_drift
+            warn "$rel ${D}(Symlink ins Repo - apply macht eine Kopie daraus)${N}"
         elif [[ ! -e "$target" ]]; then
             mark_drift
             miss "$rel ${D}(fehlt auf dem Host)${N}"
         elif cmp -s "$src" "$target"; then
-            mark_drift
-            info "$rel ${D}(Kopie, inhaltsgleich - Symlink waere sicherer)${N}"
+            ok "$rel"
         else
             mark_drift
             diverged=1
@@ -192,18 +193,23 @@ do_apply() {
         fi
     fi
 
-    echo "  Verlinke Dotfiles..."
+    echo "  Kopiere Dotfiles..."
     local rel target
     while IFS= read -r -d '' src; do
         rel="${src#"$REPO_DIR"/}"
         target="$HOME/$rel"
         mkdir -p "$(dirname "$target")"
 
-        if [[ -e "$target" && ! -L "$target" ]]; then
-            mv "$target" "$target.bak.$(date +%Y%m%d%H%M%S)"
+        # Symlink ins Repo (Altlast): Link entfernen, Kopie hinlegen
+        if [[ -L "$target" ]] && [[ "$(readlink -f "$target")" == "$(readlink -f "$src")" ]]; then
+            rm -- "$target"
+        elif [[ -e "$target" || -L "$target" ]]; then
+            cmp -s "$src" "$target" && continue
+            mv -- "$target" "$target.bak.$(date +%Y%m%d%H%M%S)"
             info "Backup: $rel"
         fi
-        ln -sfn "$src" "$target"
+        cp -- "$src" "$target"
+        ok "$rel"
     done < <(find_dotfiles)
 
     ok "Fertig. './setup.sh' zur Kontrolle."
@@ -235,11 +241,6 @@ do_sync() {
     while IFS= read -r -d '' src; do
         rel="${src#"$REPO_DIR"/}"
         target="$HOME/$rel"
-
-        # Symlink ins Repo: eine Datei, kein Drift moeglich
-        if [[ -L "$target" ]] && [[ "$(readlink -f "$target")" == "$(readlink -f "$src")" ]]; then
-            continue
-        fi
 
         # Host-Datei fehlt: das ist ein apply-Fall, nicht sync.
         # Wuerde man hier etwas tun, loeschte man Repo-Inhalt.
@@ -303,7 +304,9 @@ do_add() {
 
     local target rel src
     for target in "$@"; do
-        target="$(readlink -f -- "$target" 2>/dev/null || echo "$target")"
+        # -s: Symlinks nicht aufloesen, sonst landet ein Link ins Repo
+        # als Repo-Pfad statt als $HOME-Pfad
+        target="$(realpath -s -- "$target" 2>/dev/null || echo "$target")"
 
         if [[ ! -f "$target" ]]; then
             warn "$target - keine Datei"
@@ -319,8 +322,7 @@ do_add() {
 
         mkdir -p "$(dirname "$src")"
         cp -- "$target" "$src"
-        ln -sfn "$src" "$target"
-        ok "$rel ${D}(kopiert + verlinkt)${N}"
+        ok "$rel ${D}(ins Repo kopiert)${N}"
     done
 }
 

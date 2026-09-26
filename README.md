@@ -9,15 +9,16 @@ Run it from inside the repo directory:
 
 ```bash
 ./setup.sh              # report only, changes nothing
-./setup.sh apply        # repo -> host: install missing packages, symlink dotfiles
+./setup.sh apply        # repo -> host: install missing packages, copy dotfiles
 ./setup.sh sync         # host -> repo: update package lists and changed dotfiles
-./setup.sh add <path>   # add a new file from $HOME to the repo and symlink it
+./setup.sh add <path>   # copy a new file from $HOME into the repo
 ```
 
 `-y` skips the prompts during `sync` (for cron/CI).
 
 - Managed dotfiles: everything under `.config/` and `.local/bin/`
-- `apply` backs up existing files as `<file>.bak.<timestamp>` before linking
+- Dotfiles are plain copies on the host, never symlinks
+- `apply` backs up differing files as `<file>.bak.<timestamp>` before copying
 - Package lists: `pkglist-repo.txt` (pacman), `pkglist-aur.txt` (AUR)
 - AUR packages are **not** installed by `apply`, use an AUR helper:
 
