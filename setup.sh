@@ -28,6 +28,16 @@ PKGLIST_REPO="$REPO_DIR/pkglist-repo.txt"
 PKGLIST_AUR="$REPO_DIR/pkglist-aur.txt"
 CONFIG_SRC="$REPO_DIR/.config"
 
+# Verzeichnisse, deren Dateien als Dotfiles verwaltet werden (relativ zu $HOME)
+DOTFILE_DIRS=(".config" ".local/bin")
+
+find_dotfiles() {
+    local d
+    for d in "${DOTFILE_DIRS[@]}"; do
+        [[ -d "$REPO_DIR/$d" ]] && find "$REPO_DIR/$d" -type f -print0
+    done
+}
+
 # --- Ausgabe -----------------------------------------------------------
 if [[ -t 1 ]]; then
     R=$'\e[31m'; G=$'\e[32m'; Y=$'\e[33m'; B=$'\e[34m'; D=$'\e[2m'; N=$'\e[0m'
@@ -118,7 +128,7 @@ check_dotfiles() {
             diverged=1
             warn "$rel ${D}(WEICHT AB)${N}"
         fi
-    done < <(find "$CONFIG_SRC" -type f -print0)
+    done < <(find_dotfiles)
 
     if (( diverged )); then
         printf '\n  %sDiff ansehen:%s\n' "$D" "$N"
@@ -194,7 +204,7 @@ do_apply() {
             info "Backup: $rel"
         fi
         ln -sfn "$src" "$target"
-    done < <(find "$CONFIG_SRC" -type f -print0)
+    done < <(find_dotfiles)
 
     ok "Fertig. './setup.sh' zur Kontrolle."
 }
@@ -269,7 +279,7 @@ do_sync() {
         cp -- "$target" "$src"
         ok "$rel ${D}(Host -> Repo)${N}"
         ((copied++))
-    done < <(find "$CONFIG_SRC" -type f -print0)
+    done < <(find_dotfiles)
 
     (( interactive )) && exec 3<&-
 

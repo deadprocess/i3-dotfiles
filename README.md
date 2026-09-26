@@ -4,10 +4,25 @@ My personal i3 dotfiles for Arch Linux.
 
 ## Setup
 
-Run from inside the repo directory:
+`setup.sh` compares the host (actual state) with the repo (target state).
+Run it from inside the repo directory:
 
 ```bash
-bash setup.sh
+./setup.sh              # report only, changes nothing
+./setup.sh apply        # repo -> host: install missing packages, symlink dotfiles
+./setup.sh sync         # host -> repo: update package lists and changed dotfiles
+./setup.sh add <path>   # add a new file from $HOME to the repo and symlink it
+```
+
+`-y` skips the prompts during `sync` (for cron/CI).
+
+- Managed dotfiles: everything under `.config/` and `.local/bin/`
+- `apply` backs up existing files as `<file>.bak.<timestamp>` before linking
+- Package lists: `pkglist-repo.txt` (pacman), `pkglist-aur.txt` (AUR)
+- AUR packages are **not** installed by `apply`, use an AUR helper:
+
+```bash
+yay -S --needed - < pkglist-aur.txt
 ```
 
 ## After install
@@ -24,4 +39,12 @@ bash setup.sh
 - rofi — app launcher
 - fastfetch — system info
 - fcitx5 — input method
-- lockscreen — custom C lockscreen (blurred bg, pywal colors, clock)
+- lock — `~/.local/bin/lock`, i3lock-color with blur, clock and pywal colors
+
+## Lockscreen
+
+`~/.local/bin/lock` needs **i3lock-color** (plain `i3lock` lacks the options)
+and the *JetBrainsMono Nerd Font*. Without pywal colors it uses built-in fallbacks.
+
+- `$mod+l` — lock manually
+- `xss-lock` — locks automatically before suspend (`lock -n`)
