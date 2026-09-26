@@ -1,0 +1,46 @@
+#!/bin/sh
+# ~/.local/bin/lock — i3lock-color mit pywal16-Farben
+# Aufruf: lock        (normal)
+#         lock -n     (für xss-lock, bleibt im Vordergrund)
+
+# ---- Fallback-Farben, falls pywal noch nicht lief ----
+background="#1a1216"; foreground="#d8cfd4"
+color1="#c4677a"; color2="#8fae8b"; color4="#a58bb5"; color8="#5a4c55"
+
+WAL="$HOME/.cache/wal/colors.sh"
+[ -f "$WAL" ] && . "$WAL"
+
+h() { printf '%s' "${1#\#}"; }          # "#rrggbb" -> "rrggbb"
+BG=$(h "$background"); FG=$(h "$foreground")
+AC=$(h "$color4");     WR=$(h "$color1")
+OK=$(h "$color2");     MU=$(h "$color8")
+
+FONT="JetBrainsMono Nerd Font"
+
+exec i3lock \
+    --blur 8 \
+    --clock --indicator \
+    --radius 120 --ring-width 6 \
+    \
+    --inside-color="${BG}b3"      --ring-color="${MU}ff" \
+    --insidever-color="${BG}b3"   --ringver-color="${OK}ff" \
+    --insidewrong-color="${BG}b3" --ringwrong-color="${WR}ff" \
+    --line-uses-inside \
+    --keyhl-color="${AC}ff"       --bshl-color="${WR}ff" \
+    --separator-color="00000000" \
+    \
+    --time-color="${FG}ff"  --date-color="${FG}99" \
+    --verif-color="${OK}ff" --wrong-color="${WR}ff" \
+    --layout-color="${FG}99" \
+    \
+    --time-str="%H:%M"      --date-str="%A, %d.%m." \
+    --time-font="$FONT"     --date-font="$FONT" \
+    --verif-font="$FONT"    --wrong-font="$FONT" \
+    --layout-font="$FONT" \
+    --time-size=52 --date-size=15 --verif-size=16 --wrong-size=16 \
+    \
+    --verif-text="…" --wrong-text="Falsch" \
+    --noinput-text="Leer" --lock-text="Sperre" --lockfailed-text="Fehler" \
+    \
+    --pass-media-keys --pass-screen-keys --pass-volume-keys \
+    "$@"
